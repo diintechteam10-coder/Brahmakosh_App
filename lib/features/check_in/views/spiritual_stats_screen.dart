@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:brahmakosh/common/widgets/custom_profile_avatar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -161,45 +162,44 @@ class SpiritualStatsScreen extends StatelessWidget {
           ),
           child: Consumer<ProfileViewModel>(
             builder: (context, profileVM, child) {
-              final profileImageUrl = profileVM.profile?.profileImageUrl;
-              final hasImage =
-                  profileImageUrl != null && profileImageUrl.isNotEmpty;
+              final profileImageUrl =
+                  profileVM.profile?.profile?.profileImage ??
+                  profileVM.profile?.profileImageUrl;
 
-              return CircleAvatar(
+              return CustomProfileAvatar(
+                imageUrl: profileImageUrl,
                 radius: 30,
                 backgroundColor: const Color(0xffFFF2D9),
-                backgroundImage: hasImage
-                    ? NetworkImage(profileImageUrl)
-                    : null,
-                child: !hasImage
-                    ? const Icon(
-                        Icons.person,
-                        size: 30,
-                        color: Color(0xff7B4A12),
-                      )
-                    : null,
+                borderColor: Colors.transparent,
+                borderWidth: 0,
               );
             },
           ),
         ),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              user.name ?? 'Seeker',
-              style: GoogleFonts.lora(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xff7B4A12),
-              ),
-            ),
-            if (user.email != null)
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                user.email!,
-                style: GoogleFonts.lora(fontSize: 12, color: Colors.black54),
+                user.name ?? 'Seeker',
+                style: GoogleFonts.lora(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xff7B4A12),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-          ],
+              if (user.email != null)
+                Text(
+                  user.email!,
+                  style: GoogleFonts.lora(fontSize: 12, color: Colors.black54),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+            ],
+          ),
         ),
       ],
     );
@@ -290,6 +290,8 @@ class SpiritualStatsScreen extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
@@ -299,6 +301,8 @@ class SpiritualStatsScreen extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: Colors.black54,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -441,6 +445,8 @@ class SpiritualStatsScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -449,6 +455,8 @@ class SpiritualStatsScreen extends StatelessWidget {
                         fontSize: 12,
                         color: Colors.black54,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

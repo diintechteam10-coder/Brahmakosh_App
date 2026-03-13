@@ -110,8 +110,9 @@ class UserDetails {
   final String? type;
   final String? name;
   final String? email;
+  final String? image;
 
-  UserDetails({this.id, this.type, this.name, this.email});
+  UserDetails({this.id, this.type, this.name, this.email, this.image});
 
   factory UserDetails.fromJson(Map<String, dynamic> json) {
     return UserDetails(
@@ -119,6 +120,7 @@ class UserDetails {
       type: json['type'],
       name: json['name'],
       email: json['email'],
+      image: json['image'],
     );
   }
 }

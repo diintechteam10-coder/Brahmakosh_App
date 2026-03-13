@@ -126,16 +126,20 @@ class Remedies {
 
 class Puja {
   String? summary;
-  List<dynamic>? suggestions;
+  List<PujaSuggestion>? suggestions;
 
   Puja({this.summary, this.suggestions});
 
   Puja.fromJson(Map<String, dynamic> json) {
     summary = json['summary'];
     if (json['suggestions'] != null) {
-      suggestions = <dynamic>[];
+      suggestions = <PujaSuggestion>[];
       json['suggestions'].forEach((v) {
-        suggestions!.add(v);
+        if (v is Map<String, dynamic>) {
+          suggestions!.add(PujaSuggestion.fromJson(v));
+        } else if (v is String) {
+          suggestions!.add(PujaSuggestion(title: v));
+        }
       });
     }
   }
@@ -144,8 +148,48 @@ class Puja {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['summary'] = summary;
     if (suggestions != null) {
-      data['suggestions'] = suggestions!.map((v) => v).toList();
+      data['suggestions'] = suggestions!.map((v) => v.toJson()).toList();
     }
+    return data;
+  }
+}
+
+class PujaSuggestion {
+  String? status;
+  int? priority;
+  String? title;
+  String? pujaId;
+  String? summary;
+  String? link;
+
+  PujaSuggestion({
+    this.status,
+    this.priority,
+    this.title,
+    this.pujaId,
+    this.summary,
+    this.link,
+  });
+
+  PujaSuggestion.fromJson(Map<String, dynamic> json) {
+    status = json['status']?.toString();
+    priority = json['priority'] is int
+        ? json['priority']
+        : int.tryParse(json['priority']?.toString() ?? '');
+    title = json['title']?.toString();
+    pujaId = json['pujaId']?.toString() ?? json['puja_id']?.toString();
+    summary = json['summary']?.toString();
+    link = json['link']?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['status'] = status;
+    data['priority'] = priority;
+    data['title'] = title;
+    data['pujaId'] = pujaId;
+    data['summary'] = summary;
+    data['link'] = link;
     return data;
   }
 }

@@ -26,11 +26,14 @@ class RashmiChat extends StatelessWidget {
   final String? backgroundImage;
   final bool hideLearnGita;
   final bool autoStartVoice;
+  final String? firstMessage;
+
   const RashmiChat({
     super.key,
     this.backgroundImage,
     this.hideLearnGita = false,
     this.autoStartVoice = false,
+    this.firstMessage,
   });
 
   @override
@@ -43,6 +46,7 @@ class RashmiChat extends StatelessWidget {
       backgroundImage: backgroundImage,
       hideLearnGita: hideLearnGita,
       autoStartVoice: autoStartVoice,
+      firstMessage: firstMessage,
     );
   }
 }
@@ -51,10 +55,13 @@ class _RashmiChatView extends StatefulWidget {
   final String? backgroundImage;
   final bool hideLearnGita;
   final bool autoStartVoice;
+  final String? firstMessage;
+
   const _RashmiChatView({
     this.backgroundImage,
     this.hideLearnGita = false,
     this.autoStartVoice = false,
+    this.firstMessage,
   });
 
   @override
@@ -109,11 +116,19 @@ class _RashmiChatViewState extends State<_RashmiChatView> {
     };
 
     // Always start with a fresh chat when this page is opened
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (Get.isRegistered<AiRashmiController>()) {
         final vm = Get.find<AiRashmiController>();
-        vm.newChat();
+        await vm.newChat();
         vm.addListener(_scrollToBottom);
+
+        // If we are opening this view and there's a first message provided by the guide screen,
+        // and we have no messages yet, display it.
+        if (widget.firstMessage != null && widget.firstMessage!.isNotEmpty) {
+          if (vm.messages.isEmpty) {
+            vm.showFirstMessage(widget.firstMessage!);
+          }
+        }
       }
 
       if (widget.autoStartVoice) {
@@ -148,6 +163,9 @@ class _RashmiChatViewState extends State<_RashmiChatView> {
   void _toggleVoiceChat() async {
     if (_voiceService.state == VoiceAgentState.IDLE ||
         _voiceService.state == VoiceAgentState.ERROR) {
+      // Show overlay instantly
+      _showVoiceOverlay();
+
       final userId =
           StorageService.getString(AppConstants.keyUserId) ?? 'default_user';
       final vm = Get.find<AiRashmiController>();
@@ -162,7 +180,6 @@ class _RashmiChatViewState extends State<_RashmiChatView> {
       }
 
       _voiceService.startSession(userId, chatId: vm.chatId);
-      _showVoiceOverlay();
     } else {
       _voiceService.stopSession();
     }
@@ -296,10 +313,30 @@ class _RashmiChatViewState extends State<_RashmiChatView> {
             children: [
               Builder(
                 builder: (context) {
+                  // Get saved agent name to determine correct background
+                  final savedAgentName =
+                      StorageService.getString(
+                        'ai_selected_agent_name',
+                      )?.toLowerCase() ??
+                      '';
+                  final isKrishnaCurrent = savedAgentName.contains('krishna');
+                  final isRashmiCurrent = savedAgentName.contains('rashmi');
+
                   String? currentBg = widget.backgroundImage;
-                  if (vm.messages.isNotEmpty && !isKrishnaChat) {
-                    currentBg = 'assets/images/Chat_background.png';
+
+                  // If chat has started (first message is present)
+                  if (vm.messages.isNotEmpty) {
+                    if (isKrishnaCurrent || isKrishnaChat) {
+                      currentBg = 'assets/images/Krishna_chat.png';
+                    } else if (isRashmiCurrent ||
+                        (widget.backgroundImage?.contains('Rashmi') ?? false)) {
+                      currentBg = 'assets/images/Rashmi_chat.png';
+                    } else {
+                      // Fallback for other agents
+                      currentBg = 'assets/images/Chat_background.png';
+                    }
                   }
+
                   if (currentBg != null) {
                     return Positioned.fill(
                       child: Image.asset(currentBg, fit: BoxFit.cover),
@@ -392,7 +429,6 @@ class _RashmiChatViewState extends State<_RashmiChatView> {
     ThemeData theme, {
     String? explicitDeityName,
   }) {
-    // Determine the current deity name for hint text
     String deityName = explicitDeityName ?? 'Krishna';
 
     if (explicitDeityName == null) {
@@ -562,6 +598,35 @@ class _RashmiChatViewState extends State<_RashmiChatView> {
               focusedErrorBorder: InputBorder.none,
               contentPadding: EdgeInsets.zero,
             ),
+            onTap: () async {
+              // When the input is tapped, show the first message and send it automatically
+              try {
+                final selectedAgentId = StorageService.getString(
+                  'ai_selected_agent_id',
+                );
+
+                if (selectedAgentId != null && selectedAgentId.isNotEmpty) {
+                  // The saved agent ID is available.
+                  // Since the agentController.avatars (model Data) might not have firstMessage,
+                  // we'll fetch the agent directly from AiRashmiService to get AgentResponseModel data.
+                  final agentsList = await vm.service.fetchAgents();
+                  final savedAgentData = agentsList.firstWhereOrNull(
+                    (a) => a.id == selectedAgentId,
+                  );
+
+                  if (savedAgentData != null &&
+                      savedAgentData.firstMessage != null &&
+                      savedAgentData.firstMessage!.isNotEmpty) {
+                    print(
+                      "Sending first message: \${savedAgentData.firstMessage}",
+                    );
+                    vm.showFirstMessage(savedAgentData.firstMessage!);
+                  }
+                }
+              } catch (e) {
+                print("Error loading first message: \$e");
+              }
+            },
             onSubmitted: (value) async {
               if (value.trim().isNotEmpty) {
                 _controller.clear();
@@ -641,26 +706,27 @@ class _RashmiChatViewState extends State<_RashmiChatView> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    // Determine the current deity name and image logic
-    String deityName = 'Krishna';
+    // Read the saved agent name directly from local storage
+    String deityName =
+        StorageService.getString('ai_selected_agent_name') ?? 'Krishna';
     String imageAsset = 'assets/images/Small_krishna.png';
 
-    // Check widget config for default
-    if (widget.backgroundImage?.contains('Rashmi') == true) {
+    // Check widget config for default if storage is empty, though storage should have it now
+    if (deityName == 'Krishna' &&
+        widget.backgroundImage?.contains('Rashmi') == true) {
       deityName = 'Rashmi';
-      imageAsset = 'assets/images/Small_rashmi.png';
     }
 
-    // Check selected deity or fallback
-    if (_deityService.selectedDeity != null) {
-      final name = _deityService.selectedDeity!.name ?? '';
-      if (name.toLowerCase().contains('rashmi')) {
-        deityName = 'Rashmi';
-        imageAsset = 'assets/images/Small_rashmi.png';
-      } else if (name.toLowerCase().contains('krishna')) {
-        deityName = 'Krishna';
-        imageAsset = 'assets/images/Small_krishna.png';
-      }
+    // Set correct image according to the saved name
+    if (deityName.toLowerCase().contains('rashmi')) {
+      imageAsset = 'assets/images/Small_rashmi.png';
+    } else if (deityName.toLowerCase().contains('krishna')) {
+      imageAsset = 'assets/images/Small_krishna.png';
+    } else {
+      // If there's another agent, default to a fallback or handle according to logic.
+      // For now, defaulting to Krishna's small image as a general fallback if nothing matches.
+      // But it can also be Rashmi's, depending on preference.
+      imageAsset = 'assets/images/Small_krishna.png';
     }
 
     return Row(
@@ -684,7 +750,7 @@ class _RashmiChatViewState extends State<_RashmiChatView> {
           ),
         ),
 
-        // Center "Krishna" Button/Dropdown with Toggle
+        // Center Button showing the Agent Name and Image (onTap removed as requested)
         Container(
           height: 36, // Reduced from 40
           padding: const EdgeInsets.symmetric(
@@ -695,45 +761,30 @@ class _RashmiChatViewState extends State<_RashmiChatView> {
             borderRadius: BorderRadius.circular(24),
           ),
           child: Center(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isDeitySelectionOpen = !_isDeitySelectionOpen;
-                });
-              },
-              child: Row(
-                children: [
-                  // Small Avatar Image
-                  Container(
-                    width: 24, // Reduced from 28
-                    height: 24, // Reduced from 28
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: AssetImage(imageAsset),
-                        fit: BoxFit.cover,
-                      ),
+            child: Row(
+              children: [
+                // Small Avatar Image
+                Container(
+                  width: 24, // Reduced from 28
+                  height: 24, // Reduced from 28
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: AssetImage(imageAsset),
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    deityName,
-                    style: TextStyle(
-                      color: Colors.orange.shade800,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12, // Reduced from 14
-                    ),
-                  ),
-                  const SizedBox(width: 2),
-                  Icon(
-                    _isDeitySelectionOpen
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  deityName,
+                  style: TextStyle(
                     color: Colors.orange.shade800,
-                    size: 18, // Reduced from 20
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12, // Reduced from 14
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -1504,6 +1555,10 @@ class _FullScreenVoiceOverlayState extends State<_FullScreenVoiceOverlay> {
 
                 switch (widget.voiceService.state) {
                   case VoiceAgentState.IDLE:
+                    title = "Connecting...";
+                    actionColor = Colors.orange;
+                    currentActionIcon = Icons.hourglass_empty;
+                    break;
                   case VoiceAgentState.ERROR:
                     title = "Disconnected";
                     break;
@@ -1567,7 +1622,7 @@ class _FullScreenVoiceOverlayState extends State<_FullScreenVoiceOverlay> {
                               ),
                               GestureDetector(
                                 behavior: HitTestBehavior.opaque,
-                                onTap: () => _showVoiceSettingsSheet(context),
+                                //onTap: () => _showVoiceSettingsSheet(context),
                                 child: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
@@ -1681,8 +1736,6 @@ class _FullScreenVoiceOverlayState extends State<_FullScreenVoiceOverlay> {
                         //   ),
                         // ),
                         const Spacer(),
-
-                        // Bottom Action Button
                         Padding(
                           padding: const EdgeInsets.only(bottom: 50.0),
                           child: GestureDetector(

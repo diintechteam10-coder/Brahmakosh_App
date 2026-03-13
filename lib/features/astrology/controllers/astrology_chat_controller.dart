@@ -739,8 +739,11 @@ class AstrologyChatController extends GetxController {
 
   Future<void> sendMessage() async {
     Utils.print("📌 ENTER sendMessage");
-    if (!isRequestAccepted.value) {
-      Utils.print("📌 EXIT sendMessage - request not accepted");
+    final hasSentMessage = messages.any((m) => isMessageFromMe(m));
+    if (!isRequestAccepted.value && hasSentMessage) {
+      Utils.print(
+        "📌 EXIT sendMessage - request not accepted and already sent first message",
+      );
       return;
     }
     final text = messageController.text.trim();

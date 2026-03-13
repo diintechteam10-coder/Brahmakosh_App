@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:brahmakosh/common/widgets/custom_profile_avatar.dart';
 import '../../../../core/common_imports.dart';
 import 'package:brahmakosh/features/home/controllers/home_controller.dart';
 import 'package:brahmakosh/common/models/user_complete_details_model.dart';
@@ -223,69 +224,12 @@ class _HomeTopBarState extends State<HomeTopBar> with TickerProviderStateMixin {
                                     // Use profileImageUrl as it likely contains the full URL
                                     final profileImageUrl =
                                         profileVM.profile?.profileImageUrl;
-                                    final hasImage =
-                                        profileImageUrl != null &&
-                                        profileImageUrl.isNotEmpty;
 
-                                    return hasImage
-                                        ? Container(
-                                            width: 40,
-                                            height: 40,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: Colors.white,
-                                                width: 1.5,
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black
-                                                      .withOpacity(0.1),
-                                                  blurRadius: 4,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ],
-                                              image: DecorationImage(
-                                                image: NetworkImage(
-                                                  profileImageUrl,
-                                                ),
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                          )
-                                        : Container(
-                                            width: 40,
-                                            height: 40,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              gradient: const LinearGradient(
-                                                colors: [
-                                                  Color(0xFFD4AF37),
-                                                  Color(0xFFA67C00),
-                                                ], // Gold Gradient
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                              border: Border.all(
-                                                color: Colors.white,
-                                                width: 1.5,
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: const Color(
-                                                    0xFFA67C00,
-                                                  ).withOpacity(0.3),
-                                                  blurRadius: 4,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ],
-                                            ),
-                                            child: const Icon(
-                                              Icons.person_rounded,
-                                              size: 24,
-                                              color: Colors.white,
-                                            ),
-                                          );
+                                    return CustomProfileAvatar(
+                                      imageUrl: profileImageUrl,
+                                      radius: 20.0,
+                                      borderWidth: 1.5,
+                                    );
                                   },
                                 ),
                               ),

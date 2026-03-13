@@ -587,7 +587,7 @@ class AstrologyExpertsView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              "STAR CHAT CONSULTATION",
+              "START CHAT CONSULTATION",
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

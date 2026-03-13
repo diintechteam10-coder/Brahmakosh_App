@@ -65,8 +65,6 @@ class _AstrologyChatFeedbackSheetState
               ),
             ),
             const SizedBox(height: 24),
-
-            // Star Rating
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(5, (index) {

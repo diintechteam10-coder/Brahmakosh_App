@@ -1,0 +1,12 @@
+Analyzing spiritual_stats_screen.dart...                        
+
+  error • Target of URI doesn't exist: 'package:fl_chart/fl_chart.dart' • lib/features/check_in/views/spiritual_stats_screen.dart:7:8 • uri_does_not_exist
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/check_in/views/spiritual_stats_screen.dart:275:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/check_in/views/spiritual_stats_screen.dart:348:59 • deprecated_member_use
+  error • The method 'PieChart' isn't defined for the type 'SpiritualStatsScreen' • lib/features/check_in/views/spiritual_stats_screen.dart:353:20 • undefined_method
+  error • The method 'PieChartData' isn't defined for the type 'SpiritualStatsScreen' • lib/features/check_in/views/spiritual_stats_screen.dart:354:15 • undefined_method
+  error • The method 'PieChartSectionData' isn't defined for the type 'SpiritualStatsScreen' • lib/features/check_in/views/spiritual_stats_screen.dart:358:26 • undefined_method
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/check_in/views/spiritual_stats_screen.dart:420:63 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/check_in/views/spiritual_stats_screen.dart:423:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/check_in/views/spiritual_stats_screen.dart:526:22 • deprecated_member_use
+

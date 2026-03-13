@@ -126,9 +126,9 @@ Future<dynamic> callWebApi(
     if (e is! UnauthorisedException) {
       Utils.print('Errors: ${e.toString()}');
       // Replace generic message with something friendlier
-      Utils.showToast(
-        'We are facing some technical issues. Please try again later.',
-      );
+      // Utils.showToast(
+      //   'We are facing some technical issues. Please try again later.',
+      // );
     }
     if (hideLoader) Utils.hideLoader();
   }
@@ -231,9 +231,9 @@ Future<dynamic> callWebApiGet(
     }
     if (e is! UnauthorisedException) {
       Utils.print('Error: ${e.toString()}');
-      Utils.showToast(
-        'We are facing some technical issues. Please try again later.',
-      );
+      // Utils.showToast(
+      //   'We are facing some technical issues. Please try again later.',
+      // );
     }
     if (hideLoader) Utils.hideLoader();
   }
@@ -310,9 +310,9 @@ Future<dynamic> callWebApiPut(
     }
     if (e is! UnauthorisedException) {
       Utils.print('Error: ${e.toString()}');
-      Utils.showToast(
-        'We are facing some technical issues. Please try again later.',
-      );
+      // Utils.showToast(
+      //   'We are facing some technical issues. Please try again later.',
+      // );
     }
     if (hideLoader) Utils.hideLoader();
   }
@@ -389,9 +389,9 @@ Future<dynamic> callWebApiPatch(
     }
     if (e is! UnauthorisedException) {
       Utils.print('Error: ${e.toString()}');
-      Utils.showToast(
-        'We are facing some technical issues. Please try again later.',
-      );
+      // Utils.showToast(
+      //   'We are facing some technical issues. Please try again later.',
+      // );
     }
     if (hideLoader) Utils.hideLoader();
   }
@@ -466,9 +466,9 @@ Future<dynamic> callWebApiDelete(
     }
     if (e is! UnauthorisedException) {
       Utils.print('Error: ${e.toString()}');
-      Utils.showToast(
-        'We are facing some technical issues. Please try again later.',
-      );
+      // Utils.showToast(
+      //   'We are facing some technical issues. Please try again later.',
+      // );
     }
     if (hideLoader) Utils.hideLoader();
   }
@@ -817,7 +817,13 @@ Future<DoshaDashaModel?> getDoshaDasha(
     url,
     token: token,
     onResponse: (response) {
+      Utils.print('--- DOSHA DASHA RAW API RESPONSE ---');
+      Utils.print(response.body);
       doshaDashaData = DoshaDashaModel.fromJson(jsonDecode(response.body));
+      Utils.print('--- PARSED DOSHA DASHA DATA ---');
+      Utils.print('Has data: ${doshaDashaData?.data != null}');
+      Utils.print('Has doshas: ${doshaDashaData?.data?.doshas != null}');
+      Utils.print('Has dashas: ${doshaDashaData?.data?.dashas != null}');
     },
     onError: (error) {
       Utils.print('Error fetching dosha dasha data: $error');
@@ -1094,7 +1100,7 @@ Future<UserCompleteDetailsModel?> getUserCompleteDetails(
     token: token,
     onResponse: (response) {
       debugPrint('************************************************');
-      debugPrint('🚀 ASTROLOGY DATA RESPONSE (Complete Details):');
+      debugPrint('🚀 ASTROLOGY DATA RESPONSE (Complete Details): $url');
       // Print in chunks to avoid console truncation
       // Print the full response using developer log to avoid truncation
       log(response.body, name: 'ASTROLOGY_DATA');

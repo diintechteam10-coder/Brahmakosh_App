@@ -1292,7 +1292,6 @@ class RawPitra {
     return data;
   }
 }
-
 class Dashas {
   CurrentYogini? currentYogini;
   CurrentChardasha? currentChardasha;
@@ -1311,68 +1310,96 @@ class Dashas {
   });
 
   Dashas.fromJson(Map<String, dynamic> json) {
-    currentYogini = json['currentYogini'] != null
-        ? CurrentYogini.fromJson(json['currentYogini'])
-        : (json['current_yogini_dasha'] != null
-              ? CurrentYogini.fromJson(json['current_yogini_dasha'])
-              : null);
-    currentChardasha = json['currentChardasha'] != null
-        ? CurrentChardasha.fromJson(json['currentChardasha'])
-        : (json['current_chardasha'] != null
-              ? CurrentChardasha.fromJson(json['current_chardasha'])
-              : null);
-    if (json['majorChardasha'] != null) {
-      majorChardasha = <MajorChardasha>[];
-      json['majorChardasha'].forEach((v) {
-        majorChardasha!.add(MajorChardasha.fromJson(v));
-      });
-    } else if (json['major_chardasha'] != null) {
-      majorChardasha = <MajorChardasha>[];
-      json['major_chardasha'].forEach((v) {
-        majorChardasha!.add(MajorChardasha.fromJson(v));
-      });
+    /// ---------------------------
+    /// CURRENT YOGINI
+    /// ---------------------------
+    if (json['currentYogini'] is Map<String, dynamic> &&
+        json['currentYogini']['error'] == null) {
+      currentYogini = CurrentYogini.fromJson(json['currentYogini']);
     }
-    if (json['vimshottariDasha'] != null) {
-      vimshottariDasha = <VimshottariDasha>[];
-      json['vimshottariDasha'].forEach((v) {
-        vimshottariDasha!.add(VimshottariDasha.fromJson(v));
-      });
-    } else if (json['vimshottari_dasha'] != null) {
-      vimshottariDasha = <VimshottariDasha>[];
-      json['vimshottari_dasha'].forEach((v) {
-        vimshottariDasha!.add(VimshottariDasha.fromJson(v));
-      });
+
+    /// ---------------------------
+    /// CURRENT CHARDASHA
+    /// ---------------------------
+    if (json['currentChardasha'] is Map<String, dynamic> &&
+        json['currentChardasha']['error'] == null) {
+      currentChardasha = CurrentChardasha.fromJson(json['currentChardasha']);
     }
-    currentVdasha = json['currentVdasha'] != null
-        ? CurrentVdasha.fromJson(json['currentVdasha'])
-        : null;
-    currentVdashaAll = json['currentVdashaAll'] != null
-        ? CurrentVdashaAll.fromJson(json['currentVdashaAll'])
-        : null;
+
+    /// ---------------------------
+    /// MAJOR CHARDASHA
+    /// ---------------------------
+    if (json['majorChardasha'] is List) {
+      majorChardasha = (json['majorChardasha'] as List)
+          .map((e) => MajorChardasha.fromJson(e))
+          .toList();
+    }
+
+    if (json['major_chardasha'] is List) {
+      majorChardasha = (json['major_chardasha'] as List)
+          .map((e) => MajorChardasha.fromJson(e))
+          .toList();
+    }
+
+    /// ---------------------------
+    /// VIMSHOTTARI DASHA
+    /// ---------------------------
+    if (json['vimshottariDasha'] is List) {
+      vimshottariDasha = (json['vimshottariDasha'] as List)
+          .map((e) => VimshottariDasha.fromJson(e))
+          .toList();
+    }
+
+    if (json['vimshottari_dasha'] is List) {
+      vimshottariDasha = (json['vimshottari_dasha'] as List)
+          .map((e) => VimshottariDasha.fromJson(e))
+          .toList();
+    }
+
+    /// ---------------------------
+    /// CURRENT V DASHA
+    /// ---------------------------
+    if (json['currentVdasha'] is Map<String, dynamic>) {
+      currentVdasha = CurrentVdasha.fromJson(json['currentVdasha']);
+    }
+
+    /// ---------------------------
+    /// CURRENT V DASHA ALL
+    /// ---------------------------
+    if (json['currentVdashaAll'] is Map<String, dynamic>) {
+      currentVdashaAll = CurrentVdashaAll.fromJson(json['currentVdashaAll']);
+    }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final Map<String, dynamic> data = {};
+
     if (currentYogini != null) {
-      data['current_yogini_dasha'] = currentYogini!.toJson();
+      data['currentYogini'] = currentYogini!.toJson();
     }
+
     if (currentChardasha != null) {
-      data['current_chardasha'] = currentChardasha!.toJson();
+      data['currentChardasha'] = currentChardasha!.toJson();
     }
+
     if (majorChardasha != null) {
-      data['major_chardasha'] = majorChardasha!.map((v) => v.toJson()).toList();
+      data['majorChardasha'] =
+          majorChardasha!.map((v) => v.toJson()).toList();
     }
+
     if (vimshottariDasha != null) {
-      data['vimshottari_dasha'] = vimshottariDasha!
-          .map((v) => v.toJson())
-          .toList();
+      data['vimshottariDasha'] =
+          vimshottariDasha!.map((v) => v.toJson()).toList();
     }
+
     if (currentVdasha != null) {
       data['currentVdasha'] = currentVdasha!.toJson();
     }
+
     if (currentVdashaAll != null) {
       data['currentVdashaAll'] = currentVdashaAll!.toJson();
     }
+
     return data;
   }
 }

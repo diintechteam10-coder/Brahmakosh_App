@@ -104,10 +104,8 @@ class MantraChantingController extends GetxController
 
     _handleArguments();
 
-    // Play Background Audio if available
-    if (_audioUrl != null && _audioUrl!.isNotEmpty) {
-      _playBackgroundAudio();
-    }
+    // Play Background Audio (handles fallback internally)
+    _playBackgroundAudio();
   }
 
   void _handleArguments() {
@@ -165,12 +163,22 @@ class MantraChantingController extends GetxController
 
   Future<void> _playBackgroundAudio() async {
     try {
-      await _backgroundAudioPlayer.setSourceUrl(_audioUrl!);
+      if (_audioUrl != null && _audioUrl!.startsWith('http')) {
+        // Network Source
+        await _backgroundAudioPlayer.setSourceUrl(_audioUrl!);
+      } else {
+        // Fallback to Asset Source
+        debugPrint("🔊 No valid network audio URL, using default fallback.");
+        await _backgroundAudioPlayer.setSource(
+          AssetSource('images/Default_music.mpeg'),
+        );
+      }
+
       await _backgroundAudioPlayer.setReleaseMode(ReleaseMode.loop); // Loop
       await _backgroundAudioPlayer.setVolume(0.5); // Moderate volume
       await _backgroundAudioPlayer.resume();
     } catch (e) {
-      debugPrint("Error playing background audio: $e");
+      debugPrint("❌ Error playing background audio: $e");
     }
   }
 

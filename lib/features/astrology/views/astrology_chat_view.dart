@@ -54,8 +54,7 @@ class AstrologyChatView extends GetView<AstrologyChatController> {
 
                     // Topics / Questions overlay
                     Obx(() {
-                      if (!controller.isRequestAccepted.value ||
-                          !controller.showSuggestions.value ||
+                      if (!controller.showSuggestions.value ||
                           controller.messages.isNotEmpty) {
                         return const SizedBox.shrink();
                       }
@@ -773,7 +772,11 @@ class AstrologyChatView extends GetView<AstrologyChatController> {
 
   Widget _buildInputBar() {
     return Obx(() {
-      if (!controller.isRequestAccepted.value) {
+      final hasSentMessage = controller.messages.any(
+        (m) => controller.isMessageFromMe(m),
+      );
+
+      if (!controller.isRequestAccepted.value && hasSentMessage) {
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -792,12 +795,16 @@ class AstrologyChatView extends GetView<AstrologyChatController> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  "Waiting for expert to accept...",
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    "Holds On Expert will respond to your message soon",
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

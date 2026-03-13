@@ -1,4 +1,5 @@
 import '../../../../core/common_imports.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../common/utils.dart';
 import '../../profile/viewmodels/profile_viewmodel.dart';
 import '../../profile/views/profile_details_view.dart';
@@ -14,6 +15,9 @@ import '../../wallet/views/recharge_plans_view.dart';
 import '../../sankalp/views/sankalp_screen.dart';
 import '../../pooja/views/pooja_list_screen.dart';
 import '../../swapna_decoder/views/swapna_decoder_screen.dart';
+import '../../support/views/help_support_view.dart';
+import '../../support/views/about_us_view.dart';
+import '../../../common/widgets/custom_profile_avatar.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -55,7 +59,7 @@ class AppDrawer extends StatelessWidget {
                                 const SizedBox(width: 16),
                                 Text(
                                   "Profile",
-                                  style: GoogleFonts.playfairDisplay(
+                                  style: GoogleFonts.lora(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                     color: const Color(0xff5D4037),
@@ -131,23 +135,10 @@ class AppDrawer extends StatelessWidget {
                                               ),
                                             ],
                                           ),
-                                          child: CircleAvatar(
-                                            radius: 35,
-                                            backgroundColor: Colors.grey[200],
-                                            backgroundImage:
-                                                profile?.profileImageUrl != null
-                                                ? NetworkImage(
-                                                    profile!.profileImageUrl!,
-                                                  )
-                                                : null,
-                                            child:
-                                                profile?.profileImageUrl == null
-                                                ? const Icon(
-                                                    Icons.person,
-                                                    size: 35,
-                                                    color: AppTheme.primaryGold,
-                                                  )
-                                                : null,
+                                          child: CustomProfileAvatar(
+                                            imageUrl: profile?.profileImageUrl,
+                                            radius: 35.0,
+                                            borderWidth: 0.0,
                                           ),
                                         ),
                                       ),
@@ -185,7 +176,7 @@ class AppDrawer extends StatelessWidget {
                                     children: [
                                       Text(
                                         user?.name ?? 'User',
-                                        style: GoogleFonts.playfairDisplay(
+                                        style: GoogleFonts.lora(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
                                           color: const Color(0xff5D4037),
@@ -240,7 +231,7 @@ class AppDrawer extends StatelessWidget {
                                       Get.to(() => const ProfileDetailsView());
                                     },
                                   ),
-                                  _languageRow(),
+                                  _languageRow(context),
 
                                   const SizedBox(height: 16),
 
@@ -317,7 +308,12 @@ class AppDrawer extends StatelessWidget {
                                       _menuItem(
                                         icon: Icons.shopping_cart_outlined,
                                         label: "Orders",
-                                        onTap: () {},
+                                        onTap: () {
+                                          _showComingSoonPopup(
+                                            context,
+                                            "Orders",
+                                          );
+                                        },
                                       ),
                                       _menuItem(
                                         icon: Icons.receipt_long_outlined,
@@ -342,22 +338,44 @@ class AppDrawer extends StatelessWidget {
                                           Get.to(() => const AvatarAgentPage());
                                         },
                                       ),
-                                      _menuItem(
-                                        icon: Icons.settings_outlined,
-                                        label: "Settings",
-                                        onTap: () => Utils.showToast('Coming soon'),
-                                      ),
+                                      // _menuItem(
+                                      //   icon: Icons.settings_outlined,
+                                      //   label: "Settings",
+                                      //   onTap: () {
+                                      //     _showComingSoonPopup(
+                                      //       context,
+                                      //       "Settings",
+                                      //     );
+                                      //   },
+                                      // ),
+                                      
+                                      
                                       _menuItem(
                                         icon: Icons.help_outline,
                                         label: "Help & Support",
                                         onTap: () {
-                                          launchUrl(Uri.parse('https://www.brahmakosh.com/privacy-policy'));
+                                          Navigator.pop(context);
+                                          Get.to(() => const HelpSupportView());
                                         },
                                       ),
                                       _menuItem(
                                         icon: Icons.info_outline,
                                         label: "About Us",
-                                        onTap: () => Utils.showToast('Coming soon'),
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          Get.to(() => const AboutUsView());
+                                        },
+                                      ),
+                                      _menuItem(
+                                        icon: Icons.delete_outline,
+                                        label: "Delete Account",
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          _launchDeleteAccountEmail(
+                                            context,
+                                            profile?.email ?? '',
+                                          );
+                                        },
                                       ),
                                     ],
                                   ),
@@ -409,7 +427,7 @@ class AppDrawer extends StatelessWidget {
                                           const SizedBox(width: 6),
                                           Text(
                                             "Logout",
-                                            style: GoogleFonts.inter(
+                                            style: GoogleFonts.lora(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.white,
@@ -442,7 +460,7 @@ class AppDrawer extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6, top: 4),
       child: Text(
         title,
-        style: GoogleFonts.playfairDisplay(
+        style: GoogleFonts.lora(
           fontSize: 15, // Reduced font size
           fontWeight: FontWeight.bold,
           color: const Color(0xff5D4037),
@@ -471,7 +489,7 @@ class AppDrawer extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.lora(
                   fontSize: 15, // Reduced font size
                   fontWeight: FontWeight.w500,
                   color: const Color(0xff4E342E),
@@ -485,35 +503,124 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  Widget _languageRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6), // Reduced padding
-      child: Row(
-        children: [
-          const Icon(Icons.translate, color: Color(0xff5D4037), size: 18),
-          const SizedBox(width: 12),
-          Expanded(
+  void _showComingSoonPopup(BuildContext context, String featureName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            const Icon(Icons.info_outline, color: AppTheme.primaryGold),
+            const SizedBox(width: 10),
+            Text(
+              "Coming Soon",
+              style: GoogleFonts.lora(
+                fontWeight: FontWeight.bold,
+                color: const Color(0xff5D4037),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          "The $featureName feature is currently under development and will be available in a future update. Stay tuned!",
+          style: GoogleFonts.lora(fontSize: 15, color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
             child: Text(
-              "Change Language",
-              style: GoogleFonts.inter(
-                fontSize: 15, // Reduced font size
-                fontWeight: FontWeight.w500,
-                color: const Color(0xff4E342E),
+              "Okay",
+              style: GoogleFonts.lora(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryGold,
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey.withOpacity(0.3)),
-            ),
-            child: Row(
-              children: [_langOption("En", true), _langOption("Hi", false)],
-            ),
-          ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _launchDeleteAccountEmail(
+      BuildContext context, String userEmail) async {
+    const recipient = 'contact@brahmakosh.com';
+    const subject = 'Account Deletion Request - Brahmakosh App';
+    final body =
+        'Dear Brahmakosh Team,\n\n'
+        'I would like to request the deletion of my account associated with the following email address:\n\n'
+        'Registered Email: $userEmail\n\n'
+        'Please delete my account and all associated data from your platform.\n\n'
+        'Thank you.\n';
+
+    final Uri emailLaunchUri = Uri.parse(
+      'mailto:$recipient?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}',
+    );
+
+    try {
+      final bool launched = await launchUrl(
+        emailLaunchUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Could not open Mail app. Please email contact@brahmakosh.com directly.',
+              ),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Could not launch email: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Could not open Mail app. Please email contact@brahmakosh.com directly.',
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _languageRow(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6), // Reduced padding
+      child: InkWell(
+        onTap: () => _showComingSoonPopup(context, "Change Language"),
+        child: Row(
+          children: [
+            const Icon(Icons.translate, color: Color(0xff5D4037), size: 18),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                "Change Language",
+                style: GoogleFonts.lora(
+                  fontSize: 15, // Reduced font size
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xff4E342E),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.grey.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [_langOption("En", true), _langOption("Hi", false)],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -527,7 +634,7 @@ class AppDrawer extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.lora(
           fontSize: 11, // Reduced font size
           fontWeight: FontWeight.bold,
           color: isSelected ? Colors.black87 : Colors.black54,
@@ -559,7 +666,7 @@ class AppDrawer extends StatelessWidget {
                 // Text Part
                 Text(
                   "Karma Wallet",
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.lora(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xff5D4037),
@@ -578,7 +685,7 @@ class AppDrawer extends StatelessWidget {
                   ),
                   child: Text(
                     "$points", // Display real points
-                    style: GoogleFonts.playfairDisplay(
+                    style: GoogleFonts.lora(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xff5D4037),
@@ -588,7 +695,7 @@ class AppDrawer extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   "Your Karma Points",
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.lora(
                     fontSize: 10,
                     color: const Color(0xff5D4037).withOpacity(0.8),
                   ),
@@ -613,7 +720,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 child: Text(
                   "Redeem",
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.lora(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -655,7 +762,7 @@ class AppDrawer extends StatelessWidget {
                 // Text Part
                 Text(
                   "Credit Wallet",
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.lora(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xff5D4037),
@@ -674,7 +781,7 @@ class AppDrawer extends StatelessWidget {
                   ),
                   child: Text(
                     "$credits", // Display real credits
-                    style: GoogleFonts.playfairDisplay(
+                    style: GoogleFonts.lora(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xff5D4037),
@@ -684,7 +791,7 @@ class AppDrawer extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   "Your Credit Points",
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.lora(
                     fontSize: 10,
                     color: const Color(0xff5D4037).withOpacity(0.8),
                   ),
@@ -709,7 +816,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 child: Text(
                   "Add Credit",
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.lora(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -757,7 +864,7 @@ class AppDrawer extends StatelessWidget {
               ),
               title: Text(
                 'View Profile Picture',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.lora(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
                 ),
@@ -782,7 +889,7 @@ class AppDrawer extends StatelessWidget {
               ),
               title: Text(
                 'Edit Profile Picture',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.lora(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
                 ),

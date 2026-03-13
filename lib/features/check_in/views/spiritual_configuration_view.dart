@@ -200,6 +200,7 @@ class _SpiritualConfigurationViewState
     return SizedBox(
       height: 110,
       child: _EmotionList(
+        availableEmotions: state.availableEmotions,
         selectedEmotion: state.selectedEmotion,
         onSelect: (emotion) {
           context.read<SpiritualConfigBloc>().add(SelectEmotion(emotion));
@@ -459,10 +460,15 @@ class _SpiritualConfigurationViewState
 }
 
 class _EmotionList extends StatefulWidget {
+  final List<String> availableEmotions;
   final String? selectedEmotion;
   final Function(String) onSelect;
 
-  const _EmotionList({required this.selectedEmotion, required this.onSelect});
+  const _EmotionList({
+    required this.availableEmotions,
+    required this.selectedEmotion,
+    required this.onSelect,
+  });
 
   @override
   State<_EmotionList> createState() => _EmotionListState();
@@ -496,22 +502,16 @@ class _EmotionListState extends State<_EmotionList> {
     final selectedEmotion = widget.selectedEmotion;
     if (selectedEmotion == null) return;
 
-    final emotions = _emotionsMap.keys.toList();
-    final index = emotions.indexOf(selectedEmotion);
+    final index = widget.availableEmotions.indexOf(selectedEmotion);
 
     if (index != -1) {
       final width = MediaQuery.of(context).size.width;
       final itemWidth = width / 3;
 
       // Center the item
-      final targetOffset = (index * itemWidth) - (width / 2) + (itemWidth / 2);
+      final targetOffset = index * itemWidth;
 
-      // Ensure within bounds (maxScrollExtent checks handled by animateTo usually but good to check)
-      // ListView handles bounds clamping automatically mostly, but let's be safe or just jump
-
-      // We need to wait for layout if it's init? addPostFrameCallback handles that.
       if (_scrollController.hasClients) {
-        // Clamp to valid range
         final maxScroll = _scrollController.position.maxScrollExtent;
         final minScroll = _scrollController.position.minScrollExtent;
 
@@ -536,81 +536,82 @@ class _EmotionListState extends State<_EmotionList> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final itemWidth = width / 3;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        final itemWidth = MediaQuery.of(context).size.width / 3;
 
-    return ListView.builder(
-      controller: _scrollController,
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.zero,
-      itemCount: _emotionsMap.length, // Finite count
-      itemBuilder: (context, index) {
-        final entry = _emotionsMap.entries.elementAt(index);
-        final emotion = entry.key;
-        final emoji = entry.value;
-        final isSelected = widget.selectedEmotion == emotion;
-
-        return SizedBox(
-          width: itemWidth,
-          child: GestureDetector(
-            onTap: () {
-              widget.onSelect(emotion);
-              // Scroll handled by didUpdateWidget or manual animate here
-              // Let's animate here for "immediate" feel
-              final target =
-                  (index * itemWidth) - (width / 2) + (itemWidth / 2);
-              if (_scrollController.hasClients) {
-                final maxScroll = _scrollController.position.maxScrollExtent;
-                // Note: maxScroll might not be accurate if items changed size, but here fixed.
-                // simpler:
-                _scrollController.animateTo(
-                  target.clamp(0.0, maxScroll), // simplified clamp
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeOutCubic,
-                );
-              }
-            },
-            child: AnimatedScale(
-              scale: isSelected ? 1.3 : 0.8,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutBack,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 55,
-                    height: 55,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.transparent,
-                    ),
-                    child: Text(
-                      emoji,
-                      style: TextStyle(fontSize: isSelected ? 30 : 22),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 200),
-                    opacity: isSelected ? 1.0 : 0.6,
-                    child: Text(
-                      emotion,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: isSelected ? 16 : 12,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.w500,
-                        color: const Color(0xff1E1E1E),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        return ListView.builder(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: (availableWidth - itemWidth) / 2,
           ),
+          itemCount: widget.availableEmotions.length, // Filtered count
+          itemBuilder: (context, index) {
+            final emotion = widget.availableEmotions[index];
+            final emoji = _emotionsMap[emotion] ?? '😐';
+            final isSelected = widget.selectedEmotion == emotion;
+
+            return SizedBox(
+              width: itemWidth,
+              child: GestureDetector(
+                onTap: () {
+                  widget.onSelect(emotion);
+                  final target = index * itemWidth;
+                  if (_scrollController.hasClients) {
+                    final maxScroll =
+                        _scrollController.position.maxScrollExtent;
+                    _scrollController.animateTo(
+                      target.clamp(0.0, maxScroll),
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeOutCubic,
+                    );
+                  }
+                },
+                child: AnimatedScale(
+                  scale: isSelected ? 1.3 : 0.8,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutBack,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 55,
+                        height: 55,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.transparent,
+                        ),
+                        child: Text(
+                          emoji,
+                          style: TextStyle(fontSize: isSelected ? 30 : 22),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      AnimatedOpacity(
+                        duration: const Duration(milliseconds: 200),
+                        opacity: isSelected ? 1.0 : 0.6,
+                        child: Text(
+                          emotion,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: isSelected ? 16 : 12,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            color: const Color(0xff1E1E1E),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );

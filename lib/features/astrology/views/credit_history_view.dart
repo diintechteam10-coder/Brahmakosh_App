@@ -10,7 +10,6 @@ class CreditHistoryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Lazy put or direct put - direct put is fine here
     final controller = Get.put(CreditHistoryController());
 
     return Scaffold(

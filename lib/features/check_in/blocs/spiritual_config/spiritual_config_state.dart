@@ -12,6 +12,7 @@ class ConfigInitial extends SpiritualConfigState {}
 class ConfigLoading extends SpiritualConfigState {}
 
 class ConfigLoaded extends SpiritualConfigState {
+  final List<String> availableEmotions;
   final List<SpiritualConfiguration> configurations;
   final SpiritualConfiguration? selectedConfig;
   final String selectedEmotion;
@@ -19,18 +20,21 @@ class ConfigLoaded extends SpiritualConfigState {
 
   const ConfigLoaded({
     required this.configurations,
+    this.availableEmotions = const [],
     this.selectedConfig,
     this.selectedEmotion = 'Happy',
     this.selectedDuration = 1,
   });
 
   ConfigLoaded copyWith({
+    List<String>? availableEmotions,
     List<SpiritualConfiguration>? configurations,
     SpiritualConfiguration? selectedConfig,
     String? selectedEmotion,
     int? selectedDuration,
   }) {
     return ConfigLoaded(
+      availableEmotions: availableEmotions ?? this.availableEmotions,
       configurations: configurations ?? this.configurations,
       selectedConfig:
           selectedConfig, // Can be null so we don't default to this.selectedConfig if passed explicitly?
@@ -65,6 +69,7 @@ class SessionReady extends ConfigLoaded {
   const SessionReady({
     required this.navigationArgs,
     required super.configurations,
+    super.availableEmotions,
     super.selectedConfig,
     super.selectedEmotion,
     super.selectedDuration,

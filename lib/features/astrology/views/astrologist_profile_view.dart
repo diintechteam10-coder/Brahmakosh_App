@@ -508,7 +508,7 @@ class AstrologistProfileView extends StatelessWidget {
 
             // Title
             Text(
-              "STAR CHAT CONSULTATION",
+              "START CHAT CONSULTATION",
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

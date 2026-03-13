@@ -6,6 +6,8 @@ import 'package:brahmakosh/core/constants/app_constants.dart';
 import 'package:brahmakosh/core/services/storage_service.dart';
 import 'package:http/http.dart' as http;
 
+import 'model/agents_response_model.dart';
+
 class ChatSummary {
   final String chatId;
   final String title;
@@ -179,5 +181,32 @@ class AiRashmiService {
     }
     return assistantReply!;
   }
+  Future<List<AgentResponseData>> fetchAgents() async {
+    final token = StorageService.getString(AppConstants.keyAuthToken);
 
+    if (token == null || token.isEmpty) {
+      throw Exception('No auth token found');
+    }
+
+    final List<AgentResponseData> agents = [];
+
+    await callWebApiGet(
+      null,
+      '${ApiUrls.baseUrl}/api/mobile/agents',
+      token: token,
+      showLoader: false,
+      hideLoader: true,
+      onResponse: (http.Response response) {
+        final resModel = AgentResponseModel.fromJson(jsonDecode(response.body));
+        if (resModel.success == true && resModel.data != null) {
+          agents.addAll(resModel.data!);
+        }
+      },
+      onError: (e) {
+        // handled by caller
+      },
+    );
+
+    return agents;
+  }
 }

@@ -98,6 +98,7 @@ class ApiUrls {
       '$chatApiUrl/voice/recording/upload-url';
   static const String voiceRecordingAttach =
       '$chatApiUrl/conversations'; // /:conversationId/voice-recording
+  static const String presignedUrl = '$baseUrl/api/upload/presigned-url';
   static const String notifications = '$baseUrl/api/notifications';
 
   /// 🔹 Swapna Decoder APIs

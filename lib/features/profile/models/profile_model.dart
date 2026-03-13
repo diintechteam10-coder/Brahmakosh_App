@@ -72,6 +72,7 @@ class UserProfile {
   final String? gowthra;
   final String? placeOfBirth;
   final String? timeOfBirth;
+  final String? profileImage;
 
   UserProfile({
     this.name,
@@ -79,6 +80,7 @@ class UserProfile {
     this.gowthra,
     this.placeOfBirth,
     this.timeOfBirth,
+    this.profileImage,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -88,6 +90,7 @@ class UserProfile {
       gowthra: json['gowthra'],
       placeOfBirth: json['placeOfBirth'],
       timeOfBirth: json['timeOfBirth'],
+      profileImage: json['profile_image'],
     );
   }
 
@@ -98,6 +101,7 @@ class UserProfile {
       'gowthra': gowthra,
       'placeOfBirth': placeOfBirth,
       'timeOfBirth': timeOfBirth,
+      'profile_image': profileImage,
     };
   }
 }

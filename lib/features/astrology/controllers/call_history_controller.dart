@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:just_audio/just_audio.dart';
 import '../../../common/api_services.dart';
 import '../../../common/api_urls.dart';
 import '../../../common/utils.dart';
@@ -11,6 +12,14 @@ class CallHistoryController extends GetxController {
   final callLogs = <CallHistoryItem>[].obs;
   final isLoading = true.obs;
   final hasError = false.obs;
+
+  // Audio Playback
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  final playingId = ''.obs; // The _id of the currently playing CallHistoryItem
+  final isAudioLoading = false.obs;
+
+  Stream<Duration> get positionStream => _audioPlayer.positionStream;
+  Stream<Duration?> get durationStream => _audioPlayer.durationStream;
 
   @override
   void onInit() {
@@ -36,9 +45,13 @@ class CallHistoryController extends GetxController {
         showLoader: false, // Background loading via shimmer
         onResponse: (response) {
           final data = jsonDecode(response.body);
+          Utils.print('📞 Call History Response Body: ${response.body}');
           if (data['success'] == true) {
             final parsedResponse = CallHistoryResponse.fromJson(data);
             if (parsedResponse.data != null) {
+              Utils.print(
+                '📊 Number of call logs parsed: ${parsedResponse.data!.length}',
+              );
               callLogs.assignAll(parsedResponse.data!);
             }
           } else {
@@ -91,5 +104,80 @@ class CallHistoryController extends GetxController {
     final m = (seconds / 60).floor();
     final s = seconds % 60;
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  /// Play a recording given its S3 key
+  Future<void> playRecording(String key, String logId) async {
+    try {
+      if (playingId.value == logId) {
+        await stopPlaying();
+        return;
+      }
+
+      await stopPlaying(); // Stop any previous playback
+      isAudioLoading.value = true;
+      playingId.value = logId;
+
+      final token = StorageService.getString(AppConstants.keyAuthToken);
+      if (token == null) return;
+
+      // 1. Get Presigned URL
+      String url = '';
+      final encodedKey = Uri.encodeComponent(key);
+      await callWebApiGet(
+        null,
+        '${ApiUrls.presignedUrl}/$encodedKey',
+        token: token,
+        showLoader: false,
+        onResponse: (response) {
+          final data = jsonDecode(response.body);
+          Utils.print('🔗 Presigned URL Response: ${response.body}');
+          if (data['data'] != null && data['data']['presignedUrl'] != null) {
+            url = data['data']['presignedUrl'].toString();
+          } else if (data['url'] != null) {
+            url = data['url'].toString();
+          }
+        },
+        onError: (e) => Utils.print('❌ Error getting presigned URL: $e'),
+      );
+
+      if (url.isEmpty) {
+        playingId.value = '';
+        isAudioLoading.value = false;
+        return;
+      }
+
+      // 2. Play Audio
+      await _audioPlayer.setUrl(url);
+      isAudioLoading.value = false;
+
+      // Listen for completion
+      _audioPlayer.playerStateStream.listen((state) {
+        if (state.processingState == ProcessingState.completed) {
+          playingId.value = '';
+        }
+      });
+
+      await _audioPlayer.play();
+    } catch (e) {
+      Utils.print('❌ Audio Playback Error: $e');
+      playingId.value = '';
+      isAudioLoading.value = false;
+    }
+  }
+
+  Future<void> stopPlaying() async {
+    await _audioPlayer.stop();
+    playingId.value = '';
+  }
+
+  Future<void> seek(Duration position) async {
+    await _audioPlayer.seek(position);
+  }
+
+  @override
+  void onClose() {
+    _audioPlayer.dispose();
+    super.onClose();
   }
 }

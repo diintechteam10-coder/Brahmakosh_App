@@ -138,6 +138,10 @@ class SpiritualConfigBloc
     String emotion,
     int duration,
   ) {
+    final availableEmotions = emotionEmojis.keys.where((emotionKey) {
+      return configs.any((c) => _isEmotionMatch(c.emotion, emotionKey));
+    }).toList();
+
     // Calculate selected config
     final exactMatch = configs.firstWhereOrNull((c) {
       final emotionMatch = _isEmotionMatch(c.emotion, emotion);
@@ -155,6 +159,7 @@ class SpiritualConfigBloc
     );
 
     return ConfigLoaded(
+      availableEmotions: availableEmotions,
       configurations: configs,
       selectedEmotion: emotion,
       selectedDuration: duration,

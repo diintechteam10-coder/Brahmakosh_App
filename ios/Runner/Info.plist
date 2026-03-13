@@ -33,6 +33,11 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>mailto</string>
+	</array>
+
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 
@@ -63,7 +68,7 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 
-	<!-- Google Sign-in Section -->
+	<!-- Google Sign-in -->
 	<key>GIDClientID</key>
 	<string>449350149768-vk39rpmam4mph0sprle7uie8okbfe2u5.apps.googleusercontent.com</string>
 
@@ -78,7 +83,6 @@
 			</array>
 		</dict>
 	</array>
-	<!-- End of Google Sign-in Section -->
 
 	<!-- Camera Permission -->
 	<key>NSCameraUsageDescription</key>
@@ -97,6 +101,14 @@
 
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>This app needs permission to save photos to your library.</string>
+
+	<!-- Microphone Permission -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires microphone access to let you talk to the AI agents.</string>
+
+	<!-- Speech Recognition Permission -->
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app uses speech recognition to convert your voice into text.</string>
 
 </dict>
 </plist>

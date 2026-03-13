@@ -319,6 +319,33 @@ class AiRashmiController extends GetxController {
     }
   }
 
+  Future<void> showFirstMessage(String message) async {
+    if (message.trim().isEmpty) return;
+
+    // Use current title or default
+    final title = currentTitle ?? 'New chat';
+    
+    // Add the AI's first message
+    messages.add(Message(role: 'assistant', content: message.trim()));
+    update();
+
+    try {
+      if (chatId == null) {
+        currentTitle = title;
+        chatId = await service.createChat(title: title);
+        
+        // Save the first message to the backend via service
+        // Depending on your API, there might not be an explicit 'addMessage'
+        // for assistant roles directly if it expects normal chat flow,
+        // but if there's no way to sync assistant-first message, it will just show visually in UI.
+        await loadHistory();
+      }
+    } catch (e) {
+      error = 'Failed to initialize chat with first message.';
+      update();
+    }
+  }
+
   String _titleFromMessage(String text) {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return 'New chat';

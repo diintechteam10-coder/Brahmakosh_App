@@ -174,11 +174,22 @@ class _MeditationPlaybackViewState extends State<MeditationPlaybackView>
     });
 
     _initVideo();
+    _initAudio(); // Start initializing and buffering audio early
   }
 
   void _parseMediaUrls() {
     final args = Get.arguments;
-    List? clips = args != null ? args['clips'] : null;
+    List? clips;
+    if (args != null) {
+      if (args['clips'] is List) {
+        clips = args['clips'];
+      } else if (args['audioUrl'] != null) {
+        // Handle case where audioUrl is passed directly
+        clips = [
+          {'audioUrl': args['audioUrl'], 'videoUrl': args['videoUrl']},
+        ];
+      }
+    }
 
     String sourceUrl = "";
     String? videoSourceUrl;
@@ -234,8 +245,13 @@ class _MeditationPlaybackViewState extends State<MeditationPlaybackView>
 
     _currentVideoUrl = videoSourceUrl;
 
-    if (sourceUrl.isEmpty) {
-      sourceUrl = 'images/Default_music.mpeg';
+    if (sourceUrl.isEmpty || !sourceUrl.startsWith('http')) {
+      // If no URL or it's not a network URL, prepare for asset fallback
+      // (Unless it's already an explicit local asset path we recognize)
+      if (!sourceUrl.startsWith('images/') &&
+          !sourceUrl.startsWith('assets/')) {
+        sourceUrl = 'images/Default_music.mpeg';
+      }
     }
     _currentAudioUrl = sourceUrl;
   }
@@ -321,22 +337,14 @@ class _MeditationPlaybackViewState extends State<MeditationPlaybackView>
         print("Error resuming audio on auto-start: $e");
       }
     } else {
-      Future.delayed(const Duration(milliseconds: 800), () {
-        _entryController.forward();
-      });
-
-      Future.delayed(const Duration(milliseconds: 3500), () {
-        setState(() => showPlayImage = true);
-      });
-
-      _initAudio();
+      _entryController.forward();
+      setState(() => showPlayImage = true);
+      // No longer need to call _initAudio here as it was started in initState
     }
   }
 
   Future<void> _initAudio() async {
     try {
-      // Logic moved to _parseMediaUrls, just set player source here
-
       String sourceUrl = _currentAudioUrl ?? 'images/Default_music.mpeg';
       bool isNetwork = sourceUrl.toLowerCase().startsWith('http');
       bool isAsset =
@@ -345,7 +353,7 @@ class _MeditationPlaybackViewState extends State<MeditationPlaybackView>
 
       await _audioPlayer.setReleaseMode(ReleaseMode.loop);
 
-      print(
+      debugPrint(
         "🎵 Audio Init: URL=$sourceUrl, Network=$isNetwork, Asset=$isAsset",
       );
 
@@ -353,24 +361,26 @@ class _MeditationPlaybackViewState extends State<MeditationPlaybackView>
         await _audioPlayer.setSourceUrl(sourceUrl);
       } else if (isAsset) {
         // If it starts with assets/, remove it because AssetSource assumes it
-        if (sourceUrl.startsWith('assets/')) {
-          sourceUrl = sourceUrl.replaceFirst('assets/', '');
+        String assetPath = sourceUrl;
+        if (assetPath.startsWith('assets/')) {
+          assetPath = assetPath.replaceFirst('assets/', '');
         }
-        await _audioPlayer.setSource(AssetSource(sourceUrl));
+        await _audioPlayer.setSource(AssetSource(assetPath));
       } else {
-        // Local file
-        await _audioPlayer.setSource(DeviceFileSource(sourceUrl));
+        // Final Fallback if URL is invalid or unknown
+        debugPrint("🔊 Unknown audio source, falling back to default asset.");
+        await _audioPlayer.setSource(AssetSource('images/Default_music.mpeg'));
       }
 
       _isAudioInitialized = true;
-      print("✅ Audio Initialized Successfully: $sourceUrl");
+      debugPrint("✅ Audio Initialized Successfully");
 
       // Fix: Ensure video continues playing if it was impacted by audio init
       if (_isVideoInitialized && !_videoController.value.isPlaying) {
         _videoController.play();
       }
     } catch (e) {
-      print("❌ Error initializing audio: $e");
+      debugPrint("❌ Error initializing audio: $e");
     }
   }
 
@@ -529,7 +539,10 @@ class _MeditationPlaybackViewState extends State<MeditationPlaybackView>
                   ),
                   onPressed: () {
                     Navigator.pop(context); // Close dialog
-                    Get.offAllNamed(AppConstants.routeDashboard, arguments: 1);
+                    Get.until(
+                      (route) =>
+                          route.settings.name == AppConstants.routeDashboard,
+                    );
                   },
                   child: const Text(
                     "Got it",
@@ -571,11 +584,18 @@ class _MeditationPlaybackViewState extends State<MeditationPlaybackView>
       _timerController.forward();
       _breathingController.repeat(reverse: true);
       _rippleController.repeat();
+
+      // NEW: If not initialized yet, wait for it
+      if (!_isAudioInitialized) {
+        debugPrint("⏳ Audio not ready, waiting for initialization...");
+        await _initAudio();
+      }
+
       if (_isAudioInitialized) {
         try {
           await _audioPlayer.resume();
         } catch (e) {
-          print("Error resuming audio: $e");
+          debugPrint("Error resuming audio: $e");
         }
       }
       // Ensure video plays
@@ -774,7 +794,10 @@ class _MeditationPlaybackViewState extends State<MeditationPlaybackView>
                   ),
                   onPressed: () {
                     Navigator.pop(context); // Close dialog
-                    Get.offAllNamed(AppConstants.routeDashboard, arguments: 1);
+                    Get.until(
+                      (route) =>
+                          route.settings.name == AppConstants.routeDashboard,
+                    );
                   },
                   child: const Text(
                     "DONE",

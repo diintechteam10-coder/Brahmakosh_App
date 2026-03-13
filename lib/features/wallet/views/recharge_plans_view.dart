@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:brahmakosh/core/common_imports.dart';
+import '../../../core/services/payment_service.dart';
 import '../../astrology/views/credit_history_view.dart';
 
 class RechargePlansView extends StatefulWidget {
@@ -12,16 +13,37 @@ class RechargePlansView extends StatefulWidget {
 class _RechargePlansViewState extends State<RechargePlansView> {
   int _selectedPlanIndex = 0;
 
-  final List<Map<String, dynamic>> _plans = [
-    {
-      "credits": 500,
-      "price": 499,
-      "originalPrice": 599, // Optional: for strike-through if needed later
-    },
-    {"credits": 1000, "price": 899, "originalPrice": 1199},
-    {"credits": 2000, "price": 1899, "originalPrice": 2399},
-    {"credits": 5000, "price": 4599, "originalPrice": 5999},
-  ];
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _plans = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPlans();
+  }
+
+  Future<void> _fetchPlans() async {
+    try {
+      final plans = await PaymentService.getPlans();
+      if (mounted) {
+        setState(() {
+          _plans = List<Map<String, dynamic>>.from(plans.map((p) => {
+                "credits": p["credits"],
+                "price": p["amount"],
+                "originalPrice": p["amount"],
+              }));
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching plans: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,21 +79,27 @@ class _RechargePlansViewState extends State<RechargePlansView> {
         children: [
           const SizedBox(height: 8),
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
-                childAspectRatio: 0.72,
-              ),
-              itemCount: _plans.length,
-              itemBuilder: (context, index) {
-                final plan = _plans[index];
-                final isSelected = _selectedPlanIndex == index;
-                return _buildPlanCard(plan, index, isSelected);
-              },
-            ),
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF6D3A0C),
+                    ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 20,
+                      mainAxisSpacing: 20,
+                      childAspectRatio: 0.72,
+                    ),
+                    itemCount: _plans.length,
+                    itemBuilder: (context, index) {
+                      final plan = _plans[index];
+                      final isSelected = _selectedPlanIndex == index;
+                      return _buildPlanCard(plan, index, isSelected);
+                    },
+                  ),
           ),
           _buildBottomBar(),
         ],
@@ -209,40 +237,54 @@ class _RechargePlansViewState extends State<RechargePlansView> {
       ),
       child: SafeArea(
         child: InkWell(
-          onTap: () {
-            Get.dialog(
-              AlertDialog(
-                title: Text(
-                  "Request Sent",
-                  style: GoogleFonts.playfairDisplay(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF6D3A0C),
-                  ),
-                ),
-                content: Text(
-                  "Your request has been sent for adding amount in wallet.",
-                  style: GoogleFonts.lora(fontSize: 16),
-                ),
-                backgroundColor: const Color(0xFFFDF5E6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Get.back(),
-                    child: Text(
-                      "OK",
-                      style: GoogleFonts.lora(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: const Color(0xFFE65100),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+          onTap: () async {
+            if (_plans.isEmpty) return;
+            final selectedPlan = _plans[_selectedPlanIndex];
+
+            final success = await PaymentService.startPayment(
+    planAmount: selectedPlan["price"],
+  );
+
+  if(success){
+    Get.snackbar("Success", "Credits added successfully");
+  } else {
+    Get.snackbar("Error", "Payment failed");
+  }
+},
+          // onTap: () {
+          //   Get.dialog(
+          //     AlertDialog(
+          //       title: Text(
+          //         "Request Sent",
+          //         style: GoogleFonts.playfairDisplay(
+          //           fontWeight: FontWeight.bold,
+          //           color: const Color(0xFF6D3A0C),
+          //         ),
+          //       ),
+          //       content: Text(
+          //         "Your request has been sent for adding amount in wallet.",
+          //         style: GoogleFonts.lora(fontSize: 16),
+          //       ),
+          //       backgroundColor: const Color(0xFFFDF5E6),
+          //       shape: RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.circular(16),
+          //       ),
+          //       actions: [
+          //         TextButton(
+          //           onPressed: () => Get.back(),
+          //           child: Text(
+          //             "OK",
+          //             style: GoogleFonts.lora(
+          //               fontWeight: FontWeight.bold,
+          //               fontSize: 16,
+          //               color: const Color(0xFFE65100),
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   );
+          // },
           borderRadius: BorderRadius.circular(16),
           child: Container(
             height: 56,

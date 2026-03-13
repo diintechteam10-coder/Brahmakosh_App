@@ -456,7 +456,10 @@ class MantraChantingView extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     Get.close(1);
-                    Get.offAllNamed(AppConstants.routeDashboard, arguments: 1);
+                    Get.until(
+                      (route) =>
+                          route.settings.name == AppConstants.routeDashboard,
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xff5D4037),

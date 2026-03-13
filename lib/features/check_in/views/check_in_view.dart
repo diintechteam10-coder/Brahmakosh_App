@@ -13,6 +13,7 @@ import 'package:brahmakosh/common/utils.dart';
 
 import 'dart:async';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'chanting_configuration_view.dart';
 import 'package:brahmakosh/features/check_in/views/spiritual_stats_screen.dart';
@@ -210,7 +211,11 @@ class _CheckInViewState extends State<CheckInView>
                                 Icons.share,
                                 color: Color(0xff7B4A12),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                if (data != null) {
+                                  _shareCheckInDetails(context, data);
+                                }
+                              },
                             ),
                           ],
                         ),
@@ -512,6 +517,49 @@ class _CheckInViewState extends State<CheckInView>
           style: GoogleFonts.lora(fontSize: 14, color: const Color(0xff7B4A12)),
         ),
       ],
+    );
+  }
+
+  void _shareCheckInDetails(BuildContext context, Data data) {
+    if (data.stats == null) {
+      Utils.showToast("No stats to share yet.");
+      return;
+    }
+    const String playStoreUrl =
+        "https://play.google.com/store/apps/details?id=com.brahmakosh.app&pcampaignid=web_share";
+
+    // const String appStoreUrl = "";
+
+    final stats = data.stats!;
+    final recent =
+        (data.recentActivities != null && data.recentActivities!.isNotEmpty)
+        ? data.recentActivities!.first
+        : null;
+
+    String shareMessage =
+        "I just completed my spiritual check-in on Brahmakosh! 🧘✨\n\n";
+
+    shareMessage += "📊 My Progress:\n";
+    shareMessage += "• Total Sessions: ${stats.sessions ?? 0}\n";
+    shareMessage += "• Karma Points: ${stats.points ?? 0}\n";
+
+    if (recent != null) {
+      shareMessage +=
+          "• Last Activity: ${recent.title ?? 'Spiritual Practice'}\n";
+    }
+
+    shareMessage +=
+        "\nJoin me on my spiritual journey! Download Brahmakosh now.\n";
+    shareMessage += "Android:\n$playStoreUrl\n\n";
+
+    // shareMessage += "iOS:\n$appStoreUrl\n\n";
+
+    shareMessage += "#Brahmakosh #Spirituality";
+    final box = context.findRenderObject() as RenderBox?;
+
+    Share.share(
+      shareMessage,
+      sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
     );
   }
 
