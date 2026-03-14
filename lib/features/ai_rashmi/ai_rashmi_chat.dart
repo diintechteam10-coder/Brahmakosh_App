@@ -122,13 +122,7 @@ class _RashmiChatViewState extends State<_RashmiChatView> {
         await vm.newChat();
         vm.addListener(_scrollToBottom);
 
-        // If we are opening this view and there's a first message provided by the guide screen,
-        // and we have no messages yet, display it.
-        if (widget.firstMessage != null && widget.firstMessage!.isNotEmpty) {
-          if (vm.messages.isEmpty) {
-            vm.showFirstMessage(widget.firstMessage!);
-          }
-        }
+        // First message is handled on interaction, so we don't automatically display it on load anymore.
       }
 
       if (widget.autoStartVoice) {
@@ -1620,35 +1614,37 @@ class _FullScreenVoiceOverlayState extends State<_FullScreenVoiceOverlay> {
                                   letterSpacing: 1.1,
                                 ),
                               ),
-                              GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                //onTap: () => _showVoiceSettingsSheet(context),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.1),
-                                    shape: BoxShape.circle,
+                              OutlinedButton(
+                                onPressed: () {
+                                  // cancel action
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.red),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
                                   ),
-                                  child: const Icon(
-                                    Icons.settings,
-                                    color: Colors.white,
-                                    size: 24,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                ),
+                                child: const Text(
+                                  "Cancel",
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 16,
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-
                         const Spacer(),
-
-                        // Status and Lottie Waves
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 32),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Status Title
                               Text(
                                 title,
                                 style: TextStyle(
@@ -1659,8 +1655,6 @@ class _FullScreenVoiceOverlayState extends State<_FullScreenVoiceOverlay> {
                                 ),
                               ),
                               const SizedBox(height: 32),
-
-                              // Lottie Waves
                               if (widget.voiceService.state ==
                                   VoiceAgentState.LISTENING)
                                 Lottie.asset(
@@ -1703,73 +1697,133 @@ class _FullScreenVoiceOverlayState extends State<_FullScreenVoiceOverlay> {
                         const SizedBox(height: 48),
 
                         // Live Transcription / AI Text
-                        // Expanded(
-                        //   child: Container(
-                        //     padding: const EdgeInsets.symmetric(horizontal: 32),
-                        //     alignment: Alignment.topCenter,
-                        //     child: SingleChildScrollView(
-                        //       physics: const BouncingScrollPhysics(),
-                        //       padding: const EdgeInsets.only(bottom: 20),
-                        //       child: AnimatedSwitcher(
-                        //         duration: const Duration(milliseconds: 300),
-                        //         child: Text(
-                        //           isProcessingOrSpeaking
-                        //               ? widget.voiceService.aiText
-                        //               : widget.voiceService.interimText.isEmpty
-                        //               ? "How can I help you today?"
-                        //               : widget.voiceService.interimText,
-                        //           key: ValueKey<String>(
-                        //             isProcessingOrSpeaking
-                        //                 ? widget.voiceService.aiText
-                        //                 : widget.voiceService.interimText,
-                        //           ),
-                        //           textAlign: TextAlign.center,
-                        //           style: const TextStyle(
-                        //             color: Colors.white,
-                        //             fontSize: 26,
-                        //             fontWeight: FontWeight.w300,
-                        //             height: 1.3,
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
-                        const Spacer(),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 50.0),
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              widget.voiceService.stopSession();
-                              Navigator.pop(context);
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: actionColor.withOpacity(0.15),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: actionColor.withOpacity(0.5),
-                                  width: 2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: actionColor.withOpacity(0.2),
-                                    blurRadius: 20,
-                                    spreadRadius: 5,
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 32),
+                            alignment: Alignment.topCenter,
+                            child: SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              padding: const EdgeInsets.only(bottom: 20),
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                child: Text(
+                                  isProcessingOrSpeaking
+                                      ? widget.voiceService.aiText
+                                      : widget.voiceService.interimText.isEmpty
+                                      ? (widget.voiceService.aiText.isNotEmpty
+                                            ? widget.voiceService.aiText
+                                            : "How can I help you today?")
+                                      : widget.voiceService.interimText,
+                                  key: ValueKey<String>(
+                                    isProcessingOrSpeaking
+                                        ? widget.voiceService.aiText
+                                        : widget.voiceService.interimText,
                                   ),
-                                ],
-                              ),
-                              child: Icon(
-                                currentActionIcon == Icons.fiber_manual_record
-                                    ? Icons.stop
-                                    : Icons.close,
-                                color: actionColor,
-                                size: 36,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w300,
+                                    height: 1.3,
+                                  ),
+                                ),
                               ),
                             ),
+                          ),
+                        ),
+
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 50.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: () async {
+                                  final userId =
+                                      StorageService.getString(
+                                        AppConstants.keyUserId,
+                                      ) ??
+                                      'default_user';
+
+                                  final vm = Get.find<AiRashmiController>();
+
+                                  if (vm.chatId == null) {
+                                    vm.chatId = await vm.service.createChat(
+                                      title: "Voice Chat",
+                                    );
+                                    await vm.loadHistory();
+                                  }
+
+                                  widget.voiceService.startSession(
+                                    userId,
+                                    chatId: vm.chatId,
+                                  );
+                                  print("socket connected");
+                                },
+                                icon: const Icon(
+                                  Icons.call,
+                                  color: Colors.green,
+                                ),
+                                label: const Text("Connect"),
+                              ),
+
+                              // OutlinedButton.icon(
+                              //   onPressed: () {
+                              //     widget.voiceService.startSession("user");
+                              //   },
+                              //   style: OutlinedButton.styleFrom(
+                              //     side: const BorderSide(color: Colors.green),
+                              //     shape: RoundedRectangleBorder(
+                              //       borderRadius: BorderRadius.circular(30),
+                              //     ),
+                              //     padding: const EdgeInsets.symmetric(
+                              //       horizontal: 20,
+                              //       vertical: 12,
+                              //     ),
+                              //   ),
+                              //   icon: const Icon(
+                              //     Icons.call,
+                              //     color: Colors.green,
+                              //   ),
+                              //   label: const Text(
+                              //     "Connect",
+                              //     style: TextStyle(
+                              //       color: Colors.green,
+                              //       fontSize: 16,
+                              //     ),
+                              //   ),
+                              // ),
+                              const SizedBox(width: 16),
+                              OutlinedButton.icon(
+                                onPressed: () {
+                                  widget.voiceService.stopSession();
+                                      print("socket disconnected");
+
+                                  Navigator.pop(context);
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.red),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.call_end,
+                                  color: Colors.red,
+                                ),
+                                label: const Text(
+                                  "Disconnect",
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -1781,123 +1835,6 @@ class _FullScreenVoiceOverlayState extends State<_FullScreenVoiceOverlay> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showVoiceSettingsSheet(BuildContext context) {
-    // List of available voices - adjust IDs based on your backend expectations
-    final voices = [
-      {'id': 'voice_1', 'name': 'Rashmi (Female 1)'},
-      {'id': 'voice_2', 'name': 'Priya (Female 2)'},
-      {'id': 'voice_3', 'name': 'Krishna (Male 1)'},
-      {'id': 'voice_4', 'name': 'Arjun (Male 2)'},
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext sheetContext) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
-            color: Color(0xFFFFE0B2), // Match other modals
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Voice Settings",
-                style: GoogleFonts.lora(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Select your preferred AI voice:",
-                style: GoogleFonts.inter(fontSize: 14, color: Colors.black54),
-              ),
-              const SizedBox(height: 20),
-              ...voices.map((voice) {
-                // Get the currently saved voice (default to voice_1)
-                final currentVoice =
-                    StorageService.getString('ai_selected_voice') ?? 'voice_1';
-                final isSelected = currentVoice == voice['id'];
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: InkWell(
-                    onTap: () {
-                      StorageService.setString(
-                        'ai_selected_voice',
-                        voice['id']!,
-                      );
-                      Navigator.pop(sheetContext);
-                      Get.snackbar(
-                        "Voice Changed",
-                        "Switched to ${voice['name']}. Reconnect to apply.",
-                        snackPosition: SnackPosition.TOP,
-                        backgroundColor: const Color(0xFFA67C00),
-                        colorText: Colors.white,
-                        duration: const Duration(seconds: 2),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Colors.white
-                            : Colors.white.withOpacity(0.5),
-                        border: Border.all(
-                          color: isSelected
-                              ? const Color(0xFFA67C00)
-                              : Colors.transparent,
-                          width: isSelected ? 2 : 1,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.record_voice_over,
-                            color: isSelected
-                                ? const Color(0xFFA67C00)
-                                : Colors.black54,
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              voice['name']!,
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isSelected
-                                    ? const Color(0xFFA67C00)
-                                    : Colors.black87,
-                              ),
-                            ),
-                          ),
-                          if (isSelected)
-                            const Icon(
-                              Icons.check_circle,
-                              color: Color(0xFFA67C00),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ],
-          ),
-        );
-      },
     );
   }
 }

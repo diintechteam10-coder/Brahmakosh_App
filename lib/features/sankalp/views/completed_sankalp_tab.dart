@@ -137,6 +137,10 @@ class CompletedSankalpTab extends StatelessWidget {
           );
         }
 
+        if (completedSankalps.isEmpty) {
+          return _buildEmptyState(context);
+        }
+
         return ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           itemCount: completedSankalps.length,

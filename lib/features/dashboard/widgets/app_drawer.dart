@@ -231,7 +231,8 @@ class AppDrawer extends StatelessWidget {
                                       Get.to(() => const ProfileDetailsView());
                                     },
                                   ),
-                                  _languageRow(context),
+                                  if (!Platform.isIOS)
+                                    _languageRow(context),
 
                                   const SizedBox(height: 16),
 
@@ -248,10 +249,7 @@ class AppDrawer extends StatelessWidget {
                                     context,
                                     profile?.credits ?? 0,
                                   ),
-
                                   const SizedBox(height: 16),
-
-                                  // SANKALP SECTION
                                   _sectionHeader("Sankalp"),
                                   _menuItem(
                                     icon: Icons.spa_outlined,
@@ -293,28 +291,30 @@ class AppDrawer extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      _menuItem(
-                                        icon: Icons
-                                            .account_balance_wallet_outlined,
-                                        label: "My Kosh",
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                          Provider.of<DashboardViewModel>(
-                                            context,
-                                            listen: false,
-                                          ).changeTab(5);
-                                        },
-                                      ),
-                                      _menuItem(
-                                        icon: Icons.shopping_cart_outlined,
-                                        label: "Orders",
-                                        onTap: () {
-                                          _showComingSoonPopup(
-                                            context,
-                                            "Orders",
-                                          );
-                                        },
-                                      ),
+                                      if (!Platform.isIOS)
+                                        _menuItem(
+                                          icon: Icons
+                                              .account_balance_wallet_outlined,
+                                          label: "My Kosh",
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            Provider.of<DashboardViewModel>(
+                                              context,
+                                              listen: false,
+                                            ).changeTab(5);
+                                          },
+                                        ),
+                                      if (!Platform.isIOS)
+                                        _menuItem(
+                                          icon: Icons.shopping_cart_outlined,
+                                          label: "Orders",
+                                          onTap: () {
+                                            _showComingSoonPopup(
+                                              context,
+                                              "Orders",
+                                            );
+                                          },
+                                        ),
                                       _menuItem(
                                         icon: Icons.receipt_long_outlined,
                                         label: "Credit History",
@@ -330,14 +330,18 @@ class AppDrawer extends StatelessWidget {
                                       //   label: "My Reports",
                                       //   onTap: () {},
                                       // ),
-                                      _menuItem(
-                                        icon: Icons.face_unlock_outlined,
-                                        label: "Avatar Agent",
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                          Get.to(() => const AvatarAgentPage());
-                                        },
-                                      ),
+                                      if (!Platform.isIOS)
+                                        _menuItem(
+                                          icon: Icons.face_unlock_outlined,
+                                          label: "Avatar Agent",
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            Get.to(
+                                              () => const AvatarAgentPage(),
+                                            );
+                                          },
+                                        ),
+
                                       // _menuItem(
                                       //   icon: Icons.settings_outlined,
                                       //   label: "Settings",
@@ -348,8 +352,6 @@ class AppDrawer extends StatelessWidget {
                                       //     );
                                       //   },
                                       // ),
-                                      
-                                      
                                       _menuItem(
                                         icon: Icons.help_outline,
                                         label: "Help & Support",
@@ -371,9 +373,65 @@ class AppDrawer extends StatelessWidget {
                                         label: "Delete Account",
                                         onTap: () {
                                           Navigator.pop(context);
-                                          _launchDeleteAccountEmail(
-                                            context,
-                                            profile?.email ?? '',
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return AlertDialog(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(20),
+                                                ),
+                                                title: Text(
+                                                  "Delete Account",
+                                                  style: GoogleFonts.lora(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: const Color(0xff5D4037),
+                                                  ),
+                                                ),
+                                                content: Text(
+                                                  "Are you sure you want to delete your account?\nThis action will permanently remove your data from Brahmakosh.",
+                                                  style: GoogleFonts.inter(
+                                                    color: const Color(0xff5D4037),
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context); // Close dialog
+                                                    },
+                                                    child: Text(
+                                                      "Cancel",
+                                                      style: GoogleFonts.inter(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context); // Close dialog
+                                                      _launchDeleteAccountEmail(
+                                                        context,
+                                                        profile?.email ?? '',
+                                                      );
+                                                    },
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.redAccent,
+                                                      elevation: 0,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      "Delete",
+                                                      style: GoogleFonts.inter(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
                                           );
                                         },
                                       ),
@@ -543,7 +601,9 @@ class AppDrawer extends StatelessWidget {
   }
 
   Future<void> _launchDeleteAccountEmail(
-      BuildContext context, String userEmail) async {
+    BuildContext context,
+    String userEmail,
+  ) async {
     const recipient = 'contact@brahmakosh.com';
     const subject = 'Account Deletion Request - Brahmakosh App';
     final body =

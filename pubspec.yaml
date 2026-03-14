@@ -36,7 +36,6 @@ dependencies:
   confetti: ^0.7.0
   sizer: ^2.0.15
   just_audio: ^0.10.5
-  flutter_stripe: ^12.4.0
   # Local Storage
   shared_preferences: ^2.2.2
   video_player: ^2.10.1
@@ -80,11 +79,11 @@ dependencies:
   flutter_bloc: ^9.1.1
   equatable: ^2.0.8
   audio_session: ^0.2.2
+  fl_chart: ^1.2.0
   # socket_io_client: ^3.1.4
   # socket_io_client: ^2.0.3+1
   # socket_io_client: ^1.0.3
   socket_io_client_new: ^1.0.3
-  fl_chart: ^1.1.1
   noise_meter: ^5.1.0
 
 dev_dependencies:

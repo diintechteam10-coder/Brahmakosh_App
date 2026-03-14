@@ -168,7 +168,8 @@ class _AskBiViewState extends State<AskBiView> {
                           title: name,
                           subtitle: agent.description ?? "",
                           description: agent.firstMessage ?? "",
-                          buttonText: isKrishna ? "Unlock To Talk" : "Explore",
+                          buttonText: "Explore",
+                          // isKrishna ? "Unlock To Talk" :
                           buttonGradient: isKrishna
                               ? const LinearGradient(
                                   colors: [
@@ -194,7 +195,7 @@ class _AskBiViewState extends State<AskBiView> {
                           dividerColor: isKrishna
                               ? Colors.white.withOpacity(0.5)
                               : AppTheme.textSecondary.withOpacity(0.3),
-                          isLockIcon: isKrishna,
+                          // isLockIcon: isKrishna,
                           buttonTextColor: isKrishna
                               ? AppTheme.textPrimary
                               : Colors.white,
@@ -294,7 +295,7 @@ print("Saved Agent ID: ${StorageService.getString('ai_selected_agent_id')}");
     required VoidCallback onTap,
     required Color textColor,
     required Color dividerColor,
-    required bool isLockIcon,
+    // required bool isLockIcon,
     Color buttonTextColor = Colors.white,
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -388,14 +389,14 @@ print("Saved Agent ID: ${StorageService.getString('ai_selected_agent_id')}");
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (isLockIcon) ...[
-                                Icon(
-                                  Icons.lock,
-                                  size: 10,
-                                  color: buttonTextColor,
-                                ),
-                                const SizedBox(width: 4),
-                              ],
+                              // if (isLockIcon) ...[
+                              //   Icon(
+                              //     Icons.lock,
+                              //     size: 10,
+                              //     color: buttonTextColor,
+                              //   ),
+                              //   const SizedBox(width: 4),
+                              // ],
 
                               Text(
                                 buttonText,
@@ -405,7 +406,7 @@ print("Saved Agent ID: ${StorageService.getString('ai_selected_agent_id')}");
                                   color: buttonTextColor,
                                 ),
                               ),
-                            ],
+                            ]
                           ),
                         ),
                       ],

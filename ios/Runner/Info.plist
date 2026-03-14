@@ -86,29 +86,24 @@
 
 	<!-- Camera Permission -->
 	<key>NSCameraUsageDescription</key>
-	<string>This app requires camera access to scan content and capture images.</string>
-
+<string>Brahmakosh uses the camera so users can capture and upload photos for profile setup and share images during consultations with spiritual guides.</string>
 	<!-- Location Permission -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app uses your location to improve user experience.</string>
-
+<string>Brahmakosh uses your location to calculate accurate astrology insights such as sunrise, sunset, muhurat timings, and personalized spiritual guidance based on your location.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app may use location services to provide better functionality.</string>
-
+<string>Brahmakosh uses your location to provide accurate astrology calculations such as local sunrise, sunset, and muhurat timings based on your geographic location.</string>
 	<!-- Photo Library Permission -->
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app requires photo library access to upload images.</string>
+<string>Brahmakosh requires access to your photo library to allow you to upload profile pictures and share images with spiritual guides during consultations.</string>
 
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>This app needs permission to save photos to your library.</string>
 
 	<!-- Microphone Permission -->
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app requires microphone access to let you talk to the AI agents.</string>
-
+<string>Brahmakosh uses the microphone so users can speak with AI spiritual guides through voice conversations.</string>
 	<!-- Speech Recognition Permission -->
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>This app uses speech recognition to convert your voice into text.</string>
-
+<string>Brahmakosh uses speech recognition to convert your voice into text so you can interact with AI spiritual guides using voice commands.</string>
 </dict>
 </plist>

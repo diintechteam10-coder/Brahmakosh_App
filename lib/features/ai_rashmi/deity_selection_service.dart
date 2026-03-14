@@ -33,8 +33,6 @@ class DeitySelectionService {
         _selectedDeity!.videoUrl!.isNotEmpty) {
       return _selectedDeity!.videoUrl!;
     }
-
-    // Default fallback - no local asset
     return null;
   }
 }

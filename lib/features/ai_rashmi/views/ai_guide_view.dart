@@ -100,8 +100,6 @@ class _AiGuideViewState extends State<AiGuideView> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
-                // Subtitle
                 Text(
                   "(${widget.deityName} - ${widget.subtitle})",
                   textAlign: TextAlign.center,
@@ -222,82 +220,6 @@ class _AiGuideViewState extends State<AiGuideView> {
                     ],
                   ),
                 ),
-
-                // Bottom feature buttons
-                // Padding(
-                //   padding: const EdgeInsets.only(bottom: 30.0),
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //     children: [
-                //       // Daily Guidance
-                //       Container(
-                //         padding: const EdgeInsets.symmetric(
-                //           horizontal: 16,
-                //           vertical: 8,
-                //         ),
-                //         decoration: BoxDecoration(
-                //           color: Colors.black.withOpacity(0.3),
-                //           borderRadius: BorderRadius.circular(12),
-                //           border: Border.all(
-                //             color: AppTheme.primaryGold,
-                //             width: 1,
-                //           ),
-                //         ),
-                //         child: Column(
-                //           children: [
-                //             const Icon(
-                //               Icons.spa,
-                //               color: Colors.white,
-                //               size: 24,
-                //             ),
-                //             const SizedBox(height: 4),
-                //             Text(
-                //               "Daily\nGuidance",
-                //               textAlign: TextAlign.center,
-                //               style: GoogleFonts.lora(
-                //                 fontSize: 12,
-                //                 color: Colors.white,
-                //               ),
-                //             ),
-                //           ],
-                //         ),
-                //       ),
-                //       // Today's Stars
-                //       Container(
-                //         padding: const EdgeInsets.symmetric(
-                //           horizontal: 16,
-                //           vertical: 8,
-                //         ),
-                //         decoration: BoxDecoration(
-                //           color: Colors.black.withOpacity(0.3),
-                //           borderRadius: BorderRadius.circular(12),
-                //           border: Border.all(
-                //             color: AppTheme.primaryGold,
-                //             width: 1,
-                //           ),
-                //         ),
-                //         child: Column(
-                //           children: [
-                //             const Icon(
-                //               Icons.star,
-                //               color: Colors.white,
-                //               size: 24,
-                //             ),
-                //             const SizedBox(height: 4),
-                //             Text(
-                //               "Today's\nStars",
-                //               textAlign: TextAlign.center,
-                //               style: GoogleFonts.lora(
-                //                 fontSize: 12,
-                //                 color: Colors.white,
-                //               ),
-                //             ),
-                //           ],
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
               ],
             ),
           ),
